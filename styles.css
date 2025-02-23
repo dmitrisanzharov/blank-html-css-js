@@ -1,0 +1,11 @@
+.container{
+    border: 1px solid blue;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.box{
+    width: 200px;
+    border: 1px solid red;
+}
