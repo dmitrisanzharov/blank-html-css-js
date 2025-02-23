@@ -13,8 +13,4 @@ async function asyncFunc(){
     });
 }
 
-module.exports = {
-    anyKey: consoleMe,
-    anyKey2: myVar,
-    anyKey3: asyncFunc
-}
+module.exports = myVar;
