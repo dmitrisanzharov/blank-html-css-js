@@ -1,9 +1,8 @@
-const addFn = require('./foo').add;
+const myModuleOne = require('./foo');
+const bar = require('./bar');
 
-console.log("moduleOne: ", addFn);
-console.log('moduleOne', addFn(1,2));
-
-
-function callMe(){
-    import('./someModule').then((module) => {console.log('module', module);});
-}
+myModuleOne.myAsync(); // async
+console.log("moduleOne: ", myModuleOne);
+console.log('moduleOne', myModuleOne.add(1,2));
+console.log('str', myModuleOne.myStr);
+console.log('bar', bar);
