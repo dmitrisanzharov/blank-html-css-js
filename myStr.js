@@ -1,3 +1,2 @@
-const myStr = "Hello, World!";
-
+const myStr = 'Hello, World!';
 export default myStr;

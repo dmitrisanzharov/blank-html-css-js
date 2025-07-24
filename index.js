@@ -1,3 +1,4 @@
-import myStr from './myStr.js';
+import { v4 as uuidv4 } from 'uuid';
 
-console.log(myStr);
+let test = uuidv4();
+console.log("test: ", test);
