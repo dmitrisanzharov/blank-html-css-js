@@ -49,11 +49,19 @@ let polygonOne = L.polygon(
     [
         [53.410839638476524, -6.300380145912036],
         [53.36599867800094, -6.220729264134061],
-         [53.41631355102334, -6.174123198610958],
         [53.37465317995567, -6.16021862657644],
-       
+        [53.41631355102334, -6.174123198610958]
     ],
     {
         color: 'gray'
     }
 ).addTo(map);
+
+// popups
+marker.bindPopup('Hello world!').openPopup();
+marker2.bindPopup("<b style='color: red'>Hello world!</b><br>I am a popup. 2");
+
+var popup = L.popup()
+    .setLatLng([53.38740128392231, -6.225106629404187])
+    .setContent("I am a standalone popup.")
+    .openOn(map);
