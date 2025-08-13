@@ -8,9 +8,16 @@ Object.assign(document.getElementById('map').style, {
 // JS
 let map = L.map('map').setView([53.384995307508255, -6.233518037178154], 13);
 
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 22, // this is MAXIMUM
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     maxZoom: 22, // this is MAXIMUM
+//     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// }).addTo(map);
+
+L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}', {
+	minZoom: 0,
+	maxZoom: 20,
+	attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    ext: 'png'
 }).addTo(map);
 
 // items
@@ -61,7 +68,18 @@ let polygonOne = L.polygon(
 marker.bindPopup('Hello world!').openPopup();
 marker2.bindPopup("<b style='color: red'>Hello world!</b><br>I am a popup. 2");
 
-var popup = L.popup()
-    .setLatLng([53.38740128392231, -6.225106629404187])
-    .setContent("I am a standalone popup.")
+// var popup = L.popup()
+//     .setLatLng([53.38740128392231, -6.225106629404187])
+//     .setContent("I am a standalone popup.")
+//     .openOn(map);
+
+
+// events
+map.on('click', function (e) {
+    console.log(e);
+
+    var popup = L.popup()
+    .setLatLng([e.latlng.lat, e.latlng.lng])
+    .setContent("I am a standalone popup with lat.")
     .openOn(map);
+});
