@@ -1,2 +1,4 @@
-const { foo } = require('./foo.js');
+const { foo, fooFn } = require('./foo.js');
 console.log(foo);
+
+fooFn();
