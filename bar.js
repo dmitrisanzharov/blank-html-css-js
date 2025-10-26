@@ -1,1 +1,2 @@
-console.log('This is bar.js');
+console.log('bar console.log')
+export default 'omg';
