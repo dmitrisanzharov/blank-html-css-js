@@ -1,5 +1,7 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const compression = require('compression');
 
 const app = express();
 const PORT = 3000;
@@ -10,9 +12,34 @@ app.use(cors());
 // Parse JSON request bodies
 app.use(express.json());
 
+// allow compression
+// function shouldCompress(req, res) {
+//     if (req.url === '/text') {
+//         console.log('response zipped');
+//         return true;
+//     }
+//     return false;
+// }
+
+// app.use(compression({ filter: shouldCompress }));
+
 // Simple test route
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
     res.json({ message: `Express server running on port ${PORT}` });
+});
+
+// app.get('/text', compression(), (req, res) => {
+//     const filePath = path.join(__dirname, 'assets/content.txt');
+//     res.sendFile(filePath, (err) => {
+//         if (err) {
+//             res.status(500).send('Error sending the file');
+//         }
+//     });
+// });
+
+app.get('/text', compression(), (req, res) => {
+    const bigText = 'Hello world! '.repeat(1000); // ~2 KB
+    res.send(bigText);
 });
 
 // Start server

@@ -7,6 +7,7 @@
     "axios": "^1.12.2",
     "call-bind-apply-helpers": "^1.0.2",
     "combined-stream": "^1.0.8",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "delayed-stream": "^1.0.0",
     "dunder-proto": "^1.0.1",
