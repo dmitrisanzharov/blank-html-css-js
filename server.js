@@ -37,8 +37,13 @@ app.get('/', (req, res) => {
 //     });
 // });
 
+// app.get('/text', (req, res) => {
+//     const bigText = 'Hello world! '.repeat(100000); // ~2 KB
+//     res.send(bigText);
+// });
+
 app.get('/text', compression(), (req, res) => {
-    const bigText = 'Hello world! '.repeat(1000); // ~2 KB
+    const bigText = 'Hello world! '.repeat(100000); 
     res.send(bigText);
 });
 
