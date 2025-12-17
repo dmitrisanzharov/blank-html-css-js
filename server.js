@@ -3,6 +3,10 @@ const cors = require('cors');
 const path = require('path');
 const compression = require('compression');
 
+// HTTP/2 
+const fs = require('fs');
+const http2 = require('http2'); // Node's HTTP/2 module
+
 const app = express();
 const PORT = 3000;
 
@@ -15,6 +19,11 @@ app.use(express.json());
 // no caching
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
+    next(); // reminder to put NEXT
+})
+
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
     next(); // reminder to put NEXT
 })
 
@@ -57,3 +66,7 @@ app.get('/text', compression(), (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
 });
+
+// http2.createSecureServer({}, app).listen(PORT, () => {
+//     console.log(`HTTP/2 server listening on https://localhost:${PORT}`);
+// });
