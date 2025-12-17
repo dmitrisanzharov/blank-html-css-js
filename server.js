@@ -12,6 +12,12 @@ app.use(cors());
 // Parse JSON request bodies
 app.use(express.json());
 
+// no caching
+app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next(); // reminder to put NEXT
+})
+
 // allow compression
 // function shouldCompress(req, res) {
 //     if (req.url === '/text') {
