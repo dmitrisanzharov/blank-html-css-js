@@ -3,11 +3,926 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blank HTML</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="index.js" defer type="module"></script>
+    <title>Fleet Dashboard - Full Mockup with Sample Data</title>
+
+    <!-- Material UI and React from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@mui/material@5/umd/material-ui.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Material Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+        }
+        #root {
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .drag-handle {
+            cursor: grab;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .item-row:hover .drag-handle {
+            opacity: 0.6;
+        }
+        .drag-handle:hover {
+            opacity: 1 !important;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to My Page</h1>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const {
+            Box,
+            Card,
+            CardContent,
+            IconButton,
+            Skeleton,
+            Tooltip,
+            Typography,
+            ThemeProvider,
+            createTheme,
+            CssBaseline,
+            Divider,
+            Chip,
+            Switch,
+            FormControlLabel,
+            LinearProgress,
+            Button,
+            Paper
+        } = MaterialUI;
+
+        const theme = createTheme();
+        const gridGap = 4;
+
+        // Icons for Items to Address
+        const WarningAmberIcon = () => <span className="material-icons" style={{color: '#ed6c02', fontSize: 20}}>warning_amber</span>;
+        const ErrorOutlineIcon = () => <span className="material-icons" style={{color: '#d32f2f', fontSize: 20}}>error_outline</span>;
+        const CarIcon = () => <span className="material-icons" style={{color: '#00b050', fontSize: 20}}>directions_car</span>;
+        const SpeedIcon = () => <span className="material-icons" style={{color: '#1976d2', fontSize: 20}}>speed</span>;
+        const BatteryAlertIcon = () => <span className="material-icons" style={{color: '#d32f2f', fontSize: 20}}>battery_alert</span>;
+        const BuildIcon = () => <span className="material-icons" style={{color: '#f57c00', fontSize: 20}}>build</span>;
+        const ScheduleIcon = () => <span className="material-icons" style={{color: '#d32f2f', fontSize: 20}}>schedule</span>;
+        const DescriptionIcon = () => <span className="material-icons" style={{color: '#1976d2', fontSize: 20}}>description</span>;
+        const EventBusyIcon = () => <span className="material-icons" style={{color: '#ed6c02', fontSize: 20}}>event_busy</span>;
+        const AssignmentLateIcon = () => <span className="material-icons" style={{color: '#d32f2f', fontSize: 20}}>assignment_late</span>;
+        const LocalShippingIcon = () => <span className="material-icons" style={{color: '#9c27b0', fontSize: 20}}>local_shipping</span>;
+
+        const ArrowForwardIcon = () => <span className="material-icons" style={{fontSize: 18}}>arrow_forward</span>;
+        const MapIcon = () => <span className="material-icons" style={{fontSize: 18}}>map</span>;
+        const EditIcon = () => <span className="material-icons">edit</span>;
+        const DragIcon = () => <span className="material-icons drag-handle" style={{fontSize: 18}}>drag_indicator</span>;
+        const VisibilityIcon = () => <span className="material-icons" style={{fontSize: 18}}>visibility</span>;
+        const VisibilityOffIcon = () => <span className="material-icons" style={{fontSize: 18}}>visibility_off</span>;
+        const RestoreIcon = () => <span className="material-icons" style={{fontSize: 18}}>restart_alt</span>;
+        const SaveIcon = () => <span className="material-icons" style={{fontSize: 18}}>check</span>;
+
+        // Custom Tooltip Component
+        const TooltipContent = ({ title, content }) => (
+            <Box>
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>{title}</Typography>
+                <Box component='ul' sx={{ pl: 2, m: 0 }}>
+                    {content?.map((item, index) => (
+                        <Typography variant='caption' component="li" key={item + index}>
+                            {item}
+                        </Typography>
+                    ))}
+                </Box>
+            </Box>
+        );
+
+        const CustomTooltip = ({ title, content, children }) => (
+            <Tooltip
+                arrow
+                title={<TooltipContent title={title} content={content} />}
+                componentsProps={{
+                    tooltip: {
+                        sx: { maxWidth: 250 }
+                    }
+                }}
+            >
+                {children}
+            </Tooltip>
+        );
+
+        // Issue Item Row Component
+        const IssueItemRow = ({ issue, loading, editMode, visible, onToggleVisibility }) => {
+            return (
+                <Box
+                    className="item-row"
+                    sx={{
+                        py: 1.5,
+                        px: 2,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 1.5,
+                        opacity: visible ? 1 : 0.4,
+                        '&:hover': {
+                            backgroundColor: 'rgba(0,0,0,0.02)'
+                        }
+                    }}
+                >
+                    {editMode && <Box sx={{ pt: 0.5 }}><DragIcon /></Box>}
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 28, pt: 0.5 }}>
+                        {issue.icon}
+                    </Box>
+
+                    <Box sx={{ flex: 1 }}>
+                        <CustomTooltip title={issue.title} content={issue.tooltipContent}>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    lineHeight: 1.3,
+                                    '&:hover': { color: 'primary.main' }
+                                }}
+                            >
+                                {issue.title}
+                            </Typography>
+                        </CustomTooltip>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+                            Related to: {issue.job}
+                        </Typography>
+                    </Box>
+
+                    {!editMode && issue.actions?.find(a => a.tooltip.includes('Map')) && (
+                        <Box sx={{ pt: 0.5 }}>
+                            <Tooltip title={issue.actions.find(a => a.tooltip.includes('Map')).tooltip}>
+                                <IconButton size='small' disabled={loading || issue.count === 0}>
+                                    {issue.actions.find(a => a.tooltip.includes('Map')).icon}
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    )}
+
+                    <Box sx={{ pt: 0.5 }}>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                minWidth: 40,
+                                textAlign: 'right',
+                                fontWeight: 600,
+                                color: issue.count === 0 ? 'text.disabled' : 'text.primary'
+                            }}
+                        >
+                            {loading ? <Skeleton width={32} /> : issue.count.toLocaleString()}
+                        </Typography>
+                    </Box>
+
+                    {editMode ? (
+                        <Box sx={{ pt: 0.5 }}>
+                            <IconButton
+                                size='small'
+                                onClick={() => onToggleVisibility(issue.id)}
+                                sx={{ ml: 0.5 }}
+                            >
+                                {visible ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                            </IconButton>
+                        </Box>
+                    ) : (
+                        <Box sx={{ pt: 0.5 }}>
+                            {issue.actions?.filter(a => !a.tooltip.includes('Map')).map((action, idx) => (
+                                <Tooltip title={action.tooltip} key={idx}>
+                                    <IconButton size='small' disabled={loading || issue.count === 0}>
+                                        {action.icon}
+                                    </IconButton>
+                                </Tooltip>
+                            ))}
+                        </Box>
+                    )}
+                </Box>
+            );
+        };
+
+        // ITEMS TO ADDRESS WIDGET - Using exact code from prototype
+        const IssuesToAddressCard = ({
+            availableDeviceIssues = 0,
+            stockAnomalies = 0,
+            inactiveNrms = 0,
+            highMileageVehicles = 0,
+            lowBatteryAlerts = 0,
+            serviceOverdue = 0,
+            maintenanceOverdue = 0,
+            nrmOverdue = 0,
+            rentalOverdue = 0,
+            missingDocuments = 0,
+            expiringDocuments = 0,
+            loading = false,
+            sx
+        }) => {
+            const defaultVisibility = {
+                deviceIssues: true,
+                stockAnomalies: true,
+                inactiveNrms: true,
+                highMileage: true,
+                lowBattery: true,
+                serviceOverdue: true,
+                maintenanceOverdue: true,
+                nrmOverdue: true,
+                rentalOverdue: true,
+                missingDocs: true,
+                expiringDocs: true
+            };
+
+            const [editMode, setEditMode] = React.useState(false);
+            const [savedVisibility, setSavedVisibility] = React.useState(defaultVisibility);
+            const [visibility, setVisibility] = React.useState(defaultVisibility);
+            const [hideZeroCounts, setHideZeroCounts] = React.useState(false);
+            const [savedHideZeroCounts, setSavedHideZeroCounts] = React.useState(false);
+
+            const HIGH_MILEAGE_LIMIT = 100000;
+
+            const issues = [
+                {
+                    id: 'deviceIssues',
+                    title: 'Available with Device Anomalies',
+                    icon: <WarningAmberIcon />,
+                    count: availableDeviceIssues,
+                    job: 'Fleet Coverage',
+                    tooltipContent: [
+                        'Vehicles marked as Available',
+                        'With a device anomaly or issue',
+                        'Click to view the full list'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View Anomalies' }
+                    ]
+                },
+                {
+                    id: 'stockAnomalies',
+                    title: 'Stock Anomalies',
+                    icon: <ErrorOutlineIcon />,
+                    count: stockAnomalies,
+                    job: 'Utilisation',
+                    tooltipContent: [
+                        'Vehicles in Stock status',
+                        'That have not been moved in over 7 days',
+                        'Click to view the full list'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View Anomalies' }
+                    ]
+                },
+                {
+                    id: 'inactiveNrms',
+                    title: 'Inactive NRMs',
+                    icon: <CarIcon />,
+                    count: inactiveNrms,
+                    job: 'Utilisation',
+                    tooltipContent: [
+                        "Vehicles marked as NRM (Needs Repair/Maintenance)",
+                        "That have not been moved in the last 7 days"
+                    ],
+                    actions: [
+                        { icon: <MapIcon />, tooltip: 'View on Map' },
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'highMileage',
+                    title: 'High Mileage Vehicles',
+                    icon: <SpeedIcon />,
+                    count: highMileageVehicles,
+                    job: 'Fleet Value',
+                    tooltipContent: [
+                        `Vehicles with estimated mileage over ${HIGH_MILEAGE_LIMIT.toLocaleString()} KM`
+                    ],
+                    actions: [
+                        { icon: <MapIcon />, tooltip: 'View on Map' },
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'lowBattery',
+                    title: 'Low Battery Alerts',
+                    icon: <BatteryAlertIcon />,
+                    count: lowBatteryAlerts,
+                    job: 'Fleet Coverage',
+                    tooltipContent: [
+                        'Vehicles with low battery warnings',
+                        'Battery may need replacement or charging',
+                        'Could affect device functionality'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View Alerts' }
+                    ]
+                },
+                {
+                    id: 'serviceOverdue',
+                    title: 'Service Overdue',
+                    icon: <BuildIcon />,
+                    count: serviceOverdue,
+                    job: 'Fleet Value',
+                    tooltipContent: [
+                        'Vehicles past their scheduled service date',
+                        'Service is required to maintain warranty',
+                        'May impact vehicle reliability'
+                    ],
+                    actions: [
+                        { icon: <MapIcon />, tooltip: 'View on Map' },
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'maintenanceOverdue',
+                    title: 'Maintenance Overdue',
+                    icon: <ScheduleIcon />,
+                    count: maintenanceOverdue,
+                    job: 'Fleet Value',
+                    tooltipContent: [
+                        'Vehicles with overdue maintenance alerts',
+                        'Scheduled maintenance has not been completed',
+                        'Review maintenance history'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'nrmOverdue',
+                    title: 'NRM Overdue',
+                    icon: <AssignmentLateIcon />,
+                    count: nrmOverdue,
+                    job: 'Utilisation',
+                    tooltipContent: [
+                        'Vehicles in NRM status for extended period',
+                        'May require status update or action',
+                        'Check repair/maintenance progress'
+                    ],
+                    actions: [
+                        { icon: <MapIcon />, tooltip: 'View on Map' },
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'rentalOverdue',
+                    title: 'Rental Overdue',
+                    icon: <EventBusyIcon />,
+                    count: rentalOverdue,
+                    job: 'Utilisation',
+                    tooltipContent: [
+                        'Vehicles on rent past their return date',
+                        'Customer has not returned the vehicle',
+                        'Follow up required'
+                    ],
+                    actions: [
+                        { icon: <MapIcon />, tooltip: 'View on Map' },
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'missingDocs',
+                    title: 'Missing Documents',
+                    icon: <DescriptionIcon />,
+                    count: missingDocuments,
+                    job: 'Fleet Value',
+                    tooltipContent: [
+                        'Vehicles with missing required documentation',
+                        'May include insurance, registration, or certificates',
+                        'Upload documents to resolve'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                },
+                {
+                    id: 'expiringDocs',
+                    title: 'Expiring Documents',
+                    icon: <LocalShippingIcon />,
+                    count: expiringDocuments,
+                    job: 'Fleet Value',
+                    tooltipContent: [
+                        'Vehicles with documents expiring soon',
+                        'Includes insurance, MOT, tax, and licenses',
+                        'Renew before expiration date'
+                    ],
+                    actions: [
+                        { icon: <ArrowForwardIcon />, tooltip: 'View List' }
+                    ]
+                }
+            ];
+
+            const toggleVisibility = (id) => {
+                setVisibility(prev => ({ ...prev, [id]: !prev[id] }));
+            };
+
+            const handleReset = () => {
+                setVisibility(defaultVisibility);
+                setHideZeroCounts(false);
+            };
+
+            const handleSave = () => {
+                setSavedVisibility(visibility);
+                setSavedHideZeroCounts(hideZeroCounts);
+                setEditMode(false);
+            };
+
+            const handleCancelEdit = () => {
+                setVisibility(savedVisibility);
+                setHideZeroCounts(savedHideZeroCounts);
+                setEditMode(false);
+            };
+
+            const visibleIssues = editMode
+                ? issues.filter(issue => visibility[issue.id])
+                : issues.filter(issue => {
+                    if (!savedVisibility[issue.id]) return false;
+                    if (savedHideZeroCounts && issue.count === 0) return false;
+                    return true;
+                });
+
+            const hiddenIssues = editMode
+                ? issues.filter(issue => !visibility[issue.id])
+                : [];
+
+            const totalIssues = issues.reduce((sum, issue) => sum + issue.count, 0);
+
+            return (
+                <Card sx={sx}>
+                    <Box sx={{
+                        p: 1.5,
+                        pb: 1,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderBottom: editMode ? '1px solid rgba(0,0,0,0.12)' : 'none'
+                    }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant='h6' component='div'>
+                                Items To Address
+                            </Typography>
+                            <Chip
+                                label={totalIssues}
+                                size="small"
+                                sx={{
+                                    backgroundColor: totalIssues > 0 ? '#FFA500' : '#ccc',
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    height: 22
+                                }}
+                            />
+                        </Box>
+                        {!editMode ? (
+                            <Tooltip title="Edit Items to Address">
+                                <IconButton size='small' onClick={() => setEditMode(true)}>
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
+                        ) : (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Tooltip title="Reset to defaults">
+                                    <IconButton size='small' onClick={handleReset}>
+                                        <RestoreIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Cancel">
+                                    <IconButton size='small' onClick={handleCancelEdit}>
+                                        <span className="material-icons" style={{fontSize: 18}}>close</span>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Save changes">
+                                    <IconButton
+                                        size='small'
+                                        onClick={handleSave}
+                                        sx={{
+                                            backgroundColor: 'primary.main',
+                                            color: 'white',
+                                            '&:hover': { backgroundColor: 'primary.dark' }
+                                        }}
+                                    >
+                                        <SaveIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+                        )}
+                    </Box>
+
+                    {editMode && (
+                        <Box sx={{ px: 2, py: 1.5, backgroundColor: 'rgba(0,0,0,0.02)', borderBottom: '1px solid rgba(0,0,0,0.12)' }}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={hideZeroCounts}
+                                        onChange={(e) => setHideZeroCounts(e.target.checked)}
+                                        size="small"
+                                    />
+                                }
+                                label={
+                                    <Typography variant="caption">
+                                        Hide items with zero count
+                                    </Typography>
+                                }
+                            />
+                            <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                                Drag items to reorder • Toggle visibility with eye icon • Click save to apply changes
+                            </Typography>
+                        </Box>
+                    )}
+
+                    <Box>
+                        {editMode ? (
+                            <>
+                                {visibleIssues.length > 0 && (
+                                    <>
+                                        <Box sx={{ px: 2, py: 1, backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                                                VISIBLE ITEMS ({visibleIssues.length})
+                                            </Typography>
+                                        </Box>
+                                        {visibleIssues.map((issue, index) => (
+                                            <React.Fragment key={issue.id}>
+                                                {index > 0 && <Divider />}
+                                                <IssueItemRow
+                                                    issue={issue}
+                                                    loading={loading}
+                                                    editMode={editMode}
+                                                    visible={true}
+                                                    onToggleVisibility={toggleVisibility}
+                                                />
+                                            </React.Fragment>
+                                        ))}
+                                    </>
+                                )}
+
+                                {hiddenIssues.length > 0 && (
+                                    <>
+                                        <Divider sx={{ borderStyle: 'dashed' }} />
+                                        <Box sx={{ px: 2, py: 1, backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                                            <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                                                HIDDEN ITEMS ({hiddenIssues.length})
+                                            </Typography>
+                                        </Box>
+                                        {hiddenIssues.map((issue, index) => (
+                                            <React.Fragment key={issue.id}>
+                                                {index > 0 && <Divider />}
+                                                <IssueItemRow
+                                                    issue={issue}
+                                                    loading={loading}
+                                                    editMode={editMode}
+                                                    visible={false}
+                                                    onToggleVisibility={toggleVisibility}
+                                                />
+                                            </React.Fragment>
+                                        ))}
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                {visibleIssues.map((issue, index) => (
+                                    <React.Fragment key={issue.id}>
+                                        {index > 0 && <Divider />}
+                                        <IssueItemRow
+                                            issue={issue}
+                                            loading={loading}
+                                            editMode={false}
+                                            visible={true}
+                                            onToggleVisibility={toggleVisibility}
+                                        />
+                                    </React.Fragment>
+                                ))}
+                            </>
+                        )}
+                    </Box>
+                </Card>
+            );
+        };
+
+        // Mock widgets with sample data
+        const TitleCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                        <Box>
+                            <Typography variant="overline" color="text.secondary">Total Fleet</Typography>
+                            <Typography variant="h3" sx={{ fontWeight: 600 }}>1,247</Typography>
+                            <Typography variant="caption" color="text.secondary">devices</Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="overline" color="text.secondary">On Rent</Typography>
+                            <Typography variant="h4" sx={{ color: '#4caf50', fontWeight: 600 }}>896</Typography>
+                            <Typography variant="caption" color="text.secondary">72% utilisation</Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="overline" color="text.secondary">Available</Typography>
+                            <Typography variant="h4" sx={{ color: '#2196f3', fontWeight: 600 }}>283</Typography>
+                            <Typography variant="caption" color="text.secondary">23%</Typography>
+                        </Box>
+                        <Box>
+                            <Typography variant="overline" color="text.secondary">NRM</Typography>
+                            <Typography variant="h4" sx={{ color: '#ff9800', fontWeight: 600 }}>68</Typography>
+                            <Typography variant="caption" color="text.secondary">5%</Typography>
+                        </Box>
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const UtilizationCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Utilisation</Typography>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Box sx={{ width: 140, height: 140, mx: 'auto', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <svg width="140" height="140" viewBox="0 0 140 140">
+                                    <circle cx="70" cy="70" r="60" fill="none" stroke="#e0e0e0" strokeWidth="20"/>
+                                    <circle cx="70" cy="70" r="60" fill="none" stroke="#4caf50" strokeWidth="20" strokeDasharray="271" strokeDashoffset="75" transform="rotate(-90 70 70)"/>
+                                </svg>
+                                <Box sx={{ position: 'absolute', textAlign: 'center' }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 600 }}>72%</Typography>
+                                    <Typography variant="caption">on rent</Typography>
+                                </Box>
+                            </Box>
+                            <Box sx={{ mt: 2 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="body2">On Rent</Typography>
+                                    <Typography variant="body2" fontWeight={600}>896</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="body2">Available</Typography>
+                                    <Typography variant="body2" fontWeight={600}>283</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography variant="body2">NRM</Typography>
+                                    <Typography variant="body2" fontWeight={600}>68</Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="caption" color="text.secondary" gutterBottom>7-Day Trend</Typography>
+                            <Box sx={{ height: 200, backgroundColor: '#f5f5f5', borderRadius: 1, p: 1, display: 'flex', alignItems: 'flex-end', gap: 0.5 }}>
+                                {[68, 71, 69, 74, 72, 70, 72].map((val, i) => (
+                                    <Box key={i} sx={{ flex: 1, backgroundColor: '#4caf50', height: `${val}%`, borderRadius: '2px 2px 0 0' }}></Box>
+                                ))}
+                            </Box>
+                        </Box>
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const PinnedVehiclesCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Pinned Vehicles</Typography>
+                    <Box sx={{ mt: 2 }}>
+                        {['VEH-1234', 'VEH-5678', 'VEH-9012', 'VEH-3456'].map((veh, i) => (
+                            <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: i < 3 ? '1px solid #eee' : 'none' }}>
+                                <Box>
+                                    <Typography variant="body2" fontWeight={600}>{veh}</Typography>
+                                    <Typography variant="caption" color="text.secondary">Toyota Corolla • {['On Rent', 'Available', 'NRM', 'On Rent'][i]}</Typography>
+                                </Box>
+                                <IconButton size="small">
+                                    <span className="material-icons" style={{fontSize: 18}}>chevron_right</span>
+                                </IconButton>
+                            </Box>
+                        ))}
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const NRMBreakdownCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>NRM Breakdown</Typography>
+                    <Box sx={{ mt: 2 }}>
+                        {[
+                            { reason: 'Mechanical', count: 28, color: '#ff9800' },
+                            { reason: 'Body Damage', count: 15, color: '#f44336' },
+                            { reason: 'Awaiting Parts', count: 12, color: '#9c27b0' },
+                            { reason: 'Service', count: 8, color: '#2196f3' },
+                            { reason: 'Other', count: 5, color: '#757575' }
+                        ].map((item, i) => (
+                            <Box key={i} sx={{ mb: 1.5 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="body2">{item.reason}</Typography>
+                                    <Typography variant="body2" fontWeight={600}>{item.count}</Typography>
+                                </Box>
+                                <Box sx={{ height: 6, backgroundColor: '#e0e0e0', borderRadius: 1, overflow: 'hidden' }}>
+                                    <Box sx={{ width: `${(item.count / 68) * 100}%`, height: '100%', backgroundColor: item.color }}></Box>
+                                </Box>
+                            </Box>
+                        ))}
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const DeviceIssuesCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Device Issues</Typography>
+                    <Box sx={{ mt: 2 }}>
+                        {[
+                            { type: 'No GPS', count: 18, icon: 'gps_off', color: '#f44336' },
+                            { type: 'Battery Low', count: 12, icon: 'battery_alert', color: '#ff9800' },
+                            { type: 'No Connection', count: 8, icon: 'signal_wifi_off', color: '#ff9800' },
+                            { type: 'Odometer Error', count: 5, icon: 'error', color: '#2196f3' }
+                        ].map((item, i) => (
+                            <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1, borderBottom: i < 3 ? '1px solid #eee' : 'none' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <span className="material-icons" style={{color: item.color, fontSize: 20}}>{item.icon}</span>
+                                    <Typography variant="body2">{item.type}</Typography>
+                                </Box>
+                                <Typography variant="h6" fontWeight={600}>{item.count}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const AnomalyBreakdownCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Anomaly Breakdown</Typography>
+                    <Box sx={{ mt: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 3 }}>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h4" color="error" fontWeight={600}>47</Typography>
+                                <Typography variant="caption">Active</Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h4" color="warning.main" fontWeight={600}>23</Typography>
+                                <Typography variant="caption">Pending</Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="h4" color="success.main" fontWeight={600}>156</Typography>
+                                <Typography variant="caption">Resolved</Typography>
+                            </Box>
+                        </Box>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="caption" color="text.secondary">By Type</Typography>
+                        {[
+                            { type: 'Device', count: 28 },
+                            { type: 'Stock', count: 15 },
+                            { type: 'Movement', count: 12 },
+                            { type: 'Other', count: 15 }
+                        ].map((item, i) => (
+                            <Box key={i} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.5 }}>
+                                <Typography variant="body2">{item.type}</Typography>
+                                <Typography variant="body2" fontWeight={600}>{item.count}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        const FleetSizeTrendCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Fleet Size Trend</Typography>
+                    <Box sx={{ mt: 2, height: 200, backgroundColor: '#f5f5f5', borderRadius: 1, p: 2, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                        {[1180, 1205, 1192, 1215, 1230, 1225, 1247].map((val, i) => (
+                            <Box key={i} sx={{ textAlign: 'center', flex: 1 }}>
+                                <Box sx={{ height: 150, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                                    <Box sx={{ width: '60%', backgroundColor: '#2196f3', height: `${((val - 1150) / 100) * 100}%`, borderRadius: '4px 4px 0 0' }}></Box>
+                                </Box>
+                                <Typography variant="caption" sx={{ mt: 0.5, display: 'block' }}>
+                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}
+                                </Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                    <Typography variant="body2" sx={{ mt: 2 }}>
+                        <strong>+67</strong> vehicles added this week
+                    </Typography>
+                </CardContent>
+            </Card>
+        );
+
+        const TreemapCard = ({ sx }) => (
+            <Card sx={sx}>
+                <CardContent>
+                    <Typography variant='h6' gutterBottom>Fleet Composition</Typography>
+                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        <Button size="small" variant="contained">Category</Button>
+                        <Button size="small" variant="outlined">Make</Button>
+                        <Button size="small" variant="outlined">ACRISS</Button>
+                    </Box>
+                    <Box sx={{ height: 250, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gridTemplateRows: 'repeat(3, 1fr)', gap: 0.5 }}>
+                        {[
+                            { name: 'Compact', count: 412, color: '#2196f3' },
+                            { name: 'SUV', count: 298, color: '#4caf50' },
+                            { name: 'Mid-size', count: 245, color: '#ff9800' },
+                            { name: 'Van', count: 156, color: '#9c27b0' },
+                            { name: 'Luxury', count: 89, color: '#f44336' },
+                            { name: 'Truck', count: 47, color: '#00bcd4' }
+                        ].map((cat, i) => (
+                            <Box key={i} sx={{
+                                backgroundColor: cat.color,
+                                color: 'white',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                borderRadius: 1,
+                                gridColumn: i === 0 ? 'span 2' : i === 1 ? 'span 1' : i === 2 ? 'span 1' : 'span 1',
+                                gridRow: i === 0 ? 'span 2' : i === 1 ? 'span 2' : 'span 1'
+                            }}>
+                                <Typography variant="h5" fontWeight={600}>{cat.count}</Typography>
+                                <Typography variant="caption">{cat.name}</Typography>
+                            </Box>
+                        ))}
+                    </Box>
+                </CardContent>
+            </Card>
+        );
+
+        // Main Dashboard Component
+        const FleetDashboard = () => {
+            const gridContainer = {
+                display: 'grid',
+                justifyContent: 'start',
+                gap: `${gridGap}px`,
+                gridTemplateColumns: {
+                    xs: 'repeat(1, 1fr)',
+                    sm: 'repeat(2, 1fr)',
+                    md: 'repeat(3, 1fr)',
+                    lg: 'repeat(4, 1fr)',
+                    xl: 'repeat(5, 1fr)',
+                },
+                gridAutoFlow: 'row dense',
+            };
+
+            const titleCards = { gridColumn: { xs: 1, sm: '1 / 3', md: '1 / 4', lg: '1 / 5', xl: '1 / 6' } };
+            const issuesToAddressCardSx = { gridColumn: { xs: 1, sm: '1 / 3', md: 1 } };
+            const utilizationCardSx = { gridColumn: { xs: 1, sm: '1 / 3', md: '2 / 4', lg: '2 / 5', xl: '2 / 4' } };
+            const pinnedVehiclesCardSx = { gridColumn: { xs: 1, sm: '1 / 3', md: '1 / 4', lg: '1 / 3', xl: '4 / 6' } };
+            const nrmBreakdownCardSx = { gridColumn: { xs: 1, sm: '1 / 3', md: '1 / 3', lg: '3 / 5', xl: '1 / 3' } };
+            const deviceIssuesCardSx = { gridColumn: { md: 3, lg: '3 / 5', xl: '3 / 4' } };
+            const anomalyCardSx = { gridColumn: { md: '1 / 4', lg: '3 / 5', xl: '3 / 6' } };
+            const fleetCardsx = { gridColumn: { xs: 1, sm: '1 / 3', md: '2 / 4', lg: '1 / 3', xl: '3 / 6' }, gridRow: { xl: 3 } };
+            const treemapCardSx = { gridColumn: { xs: 1, sm: '1 / 3', md: '1 / 4', lg: '1 / 3', xl: '1 / 3' } };
+
+            return (
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <Box sx={{ paddingBottom: 2, width: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="h4">Fleet Dashboard</Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <Button variant="outlined" size="small">Map</Button>
+                                <Button variant="outlined" size="small">Table</Button>
+                                <Button variant="contained" size="small">Dashboard</Button>
+                            </Box>
+                        </Box>
+
+                        <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                            <Button variant="outlined" sx={{ minWidth: 200 }}>All Stations</Button>
+                            <Button variant="outlined" sx={{ minWidth: 200 }}>All Geofences</Button>
+                            <Button variant="contained" color="primary">Search</Button>
+                        </Box>
+
+                        <Box sx={gridContainer}>
+                            <TitleCard sx={titleCards} />
+                            <IssuesToAddressCard
+                                sx={issuesToAddressCardSx}
+                                availableDeviceIssues={23}
+                                stockAnomalies={15}
+                                inactiveNrms={8}
+                                highMileageVehicles={42}
+                                lowBatteryAlerts={12}
+                                serviceOverdue={7}
+                                maintenanceOverdue={5}
+                                nrmOverdue={3}
+                                rentalOverdue={2}
+                                missingDocuments={18}
+                                expiringDocuments={9}
+                            />
+                            <UtilizationCard sx={utilizationCardSx} />
+                            <PinnedVehiclesCard sx={pinnedVehiclesCardSx} />
+                            <NRMBreakdownCard sx={nrmBreakdownCardSx} />
+                            <DeviceIssuesCard sx={deviceIssuesCardSx} />
+                            <AnomalyBreakdownCard sx={anomalyCardSx} />
+                            <FleetSizeTrendCard sx={fleetCardsx} />
+                            <TreemapCard sx={treemapCardSx} />
+                        </Box>
+                    </Box>
+                </ThemeProvider>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FleetDashboard />);
+    </script>
 </body>
 </html>
