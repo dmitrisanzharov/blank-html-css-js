@@ -36,3 +36,29 @@
 
 
 
+function Circle(radius) {
+    this.radius = radius;
+
+    this.myNumber = 1;
+    this.calc = function () {
+        return this.myNumber * 2;
+    };
+
+    Object.defineProperty(this, 'myNumber', {
+        get: function () {
+            return 'get';
+        },
+        set: function (value) {
+            console.log('setter called')
+            return value;
+        }
+    });
+}
+
+const circle = new Circle(10);
+console.log('circle: ', circle);
+
+let test = circle.myNumber;
+console.log(test);
+
+circle.myNumber = 2;

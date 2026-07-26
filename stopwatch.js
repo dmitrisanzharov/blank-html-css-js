@@ -7,37 +7,26 @@ function StopWatch(){
 
 
     this.start = function(){
-        if(started){
+        if(start){
             throw new Error('already running')
         }
         started = true;
         startTime = new Date();
-        console.log(new Date());
     }
 
 
     this.stop = function(){
-        if(!started){
+        if(!start){
             throw new Error('not started')
         }
 
         started = false;
         endTime = new Date();
-        console.log('stopped', new Date());
     }
 
-    Object.defineProperty(this, 'duration', {
-        get: function(){
-            if(started){
-                console.log('while running')
-                return (new Date() - startTime)/1000;
-            } else {
-                console.log('after stopped');
-                return (endTime - startTime)/1000;
-            }
-            
-        }
-    })
+    this.duration = function(){
+        return endTime - startTime;
+    }
 
     this.reset = function(){
         startTime = 0;
