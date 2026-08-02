@@ -1,14 +1,38 @@
-function myFn(arg1) {
-    console.log('============================');
-    console.log('this', this);
-    console.log('arg1', arg1);
+function StopWatch() {
+    this.startTime = 0;
+    this.endTime = 0;
+    this.running = false;
+
+    this.start = function () {
+        if (this.running === true) {
+            throw new Error('already running, sorry');
+        }
+
+        this.running = true;
+        this.startTime = new Date();
+    };
+
+    this.stop = function () {
+        if (this.running === false) {
+            throw new Error('already stopped');
+        }
+
+        this.running = false;
+        this.endTime = new Date();
+    };
+
+    this.reset = function () {
+        this.startTime = 0;
+        this.endTime = 0;
+        this.duration = 0;
+        this.running = false;
+    };
+
+
+    Object.defineProperty(this, 'duration', {
+        get: function(){
+            return this.endTime - startTime; 
+        }
+    })
+
 }
-
-myFn.call({ anyKey: 'foo' }, 'argument1');
-
-let a = myFn.call({}, 'myArg');
-console.log('a: ', a);
-
-let b = new myFn('hello');
-console.log("b: ", b);
-
