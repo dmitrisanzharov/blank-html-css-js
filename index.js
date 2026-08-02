@@ -31,8 +31,15 @@ function StopWatch() {
 
     Object.defineProperty(this, 'duration', {
         get: function(){
-            return this.endTime - startTime; 
+
+            if(this.endTime === 0 && this.running === true){
+                return new Date() - this.startTime;
+            }
+
+            return this.endTime - this.startTime; 
         }
     })
 
 }
+
+const sw = new StopWatch();
