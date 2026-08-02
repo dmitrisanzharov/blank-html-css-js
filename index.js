@@ -1,5 +1,14 @@
-function Foo(){
-    console.log('this', this)
+function myFn(arg1) {
+    console.log('============================');
+    console.log('this', this);
+    console.log('arg1', arg1);
 }
 
-const newFoo = new Foo();
+myFn.call({ anyKey: 'foo' }, 'argument1');
+
+let a = myFn.call({}, 'myArg');
+console.log('a: ', a);
+
+let b = new myFn('hello');
+console.log("b: ", b);
+
