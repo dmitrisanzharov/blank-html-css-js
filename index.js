@@ -1,18 +1,58 @@
 
-const employee = {
-    baseSalary: 30000,
-    overTime: 10,
-    rate: 20,
-    getWage: function(arg1){
-        console.log('arg1', arg1);
-        return this.baseSalary + (this.overTime * this.rate);
-    }
+function anyName(){
+    console.log('fn has ran');
 }
 
-let test = employee.getWage('foo');
-console.log("test: ", test);
+function drawFn(){
+    console.log('draw circle');
+}
+
+function MyClass(){
+   
+
+    this.barArg = 'barArg';
+
+    this.myFn = anyName;
+
+     console.log('this', this);
+}
 
 
-console.log(employee);
+const foo = new MyClass();
+console.log("foo: ", foo);
 
-console.log(Object.getPrototypeOf(employee));
+
+console.log('============================');
+
+// Factory Function
+function createCircle(radiusArg){
+ return {
+ radius: radiusArg,
+ draw: function() {
+ console.log('draw');
+ }
+ };
+}
+
+let a = new createCircle(2);
+console.log("a: ", a);
+
+
+// constructor
+function CreateCircle2(radiusArg){
+    this.radius = radiusArg;
+    this.draw = drawFn;
+}
+
+let b = new CreateCircle2(2);
+console.log("b: ", b);
+
+
+console.log('============================');
+
+function NothingButThis(){
+    console.log('this', this);
+}
+
+let nothingThere = NothingButThis();
+console.log("nothingThere: ", nothingThere);
