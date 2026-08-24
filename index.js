@@ -1,58 +1,44 @@
+function MySw() {
+    this.isRunning = false;
+    this.startTime = 0;
+    this.endTime = 0;
 
-function anyName(){
-    console.log('fn has ran');
+    this.start = function () {
+        if (this.isRunning === true) {
+            alert('already running');
+        } else {
+            this.startTime = new Date();
+            this.isRunning = true;
+        }
+    };
+
+    this.stop = function () {
+        if (!this.isRunning) {
+            alert('start the sw first');
+        } else {
+            this.isRunning = false;
+            this.endTime = new Date();
+        }
+    };
+
+    this.reset = function () {
+        this.isRunning = false;
+        this.startTime = 0;
+        this.endTime = 0;
+    };
+
+    Object.defineProperty(this, 'duration', {
+        get: function(){
+            if(this.isRunning){
+                return new Date() - this.startTime; 
+            } else {
+                return this.endTime - this.startTime; 
+            }
+        }
+    })
+
+
+    // end of object
 }
 
-function drawFn(){
-    console.log('draw circle');
-}
-
-function MyClass(){
-   
-
-    this.barArg = 'barArg';
-
-    this.myFn = anyName;
-
-     console.log('this', this);
-}
-
-
-const foo = new MyClass();
-console.log("foo: ", foo);
-
-
-console.log('============================');
-
-// Factory Function
-function createCircle(radiusArg){
- return {
- radius: radiusArg,
- draw: function() {
- console.log('draw');
- }
- };
-}
-
-let a = new createCircle(2);
-console.log("a: ", a);
-
-
-// constructor
-function CreateCircle2(radiusArg){
-    this.radius = radiusArg;
-    this.draw = drawFn;
-}
-
-let b = new CreateCircle2(2);
-console.log("b: ", b);
-
-
-console.log('============================');
-
-function NothingButThis(){
-    console.log('this', this);
-}
-
-let nothingThere = NothingButThis();
-console.log("nothingThere: ", nothingThere);
+const sw = new MySw();
