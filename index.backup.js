@@ -78,3 +78,39 @@ function foo(a, b){
 }
 
 console.log(foo.length);
+
+/////////////////////
+
+
+// let sharedVal = 1;
+
+// function Circle(radius) {
+//     this.radius = radius;
+//     this.myNumber = 1;
+//     this.calc = function () {
+//         return this.myNumber * 2;
+//     };
+// }
+
+// const circle = new Circle(10);
+// console.log('circle: ', circle);
+
+// Object.defineProperty(circle, 'myProp', {
+//     get: function () {
+//         console.log('getter called');
+//         return sharedVal;
+//     },
+//     set: function (arg) {
+//         console.log('setter called', arg);
+//         sharedVal = sharedVal + arg;
+//     }
+// });
+
+// let test2 = Object.getOwnPropertyNames(circle);
+// console.log('test2: ', test2);
+
+// let whatIsTheValue = (circle.myProp = 2);
+// console.log('whatIsTheValue: ', whatIsTheValue);
+
+// let one = circle.myProp;
+// console.log('one: ', one);

@@ -1,18 +1,42 @@
-function Circle(radius) {
-   this.radius = radius;
+function MainSw() {
+    this.running = false;
+    this.startTime = 0;
+    this.endTime = 0;
 
+    this.sta = function () {
+        if (this.running) {
+            alert('running, try to stop');
+        } else {
+            this.running = true;
+            this.startTime = new Date();
+        }
+    };
 
-   this.myNumber = 1;
-   this.calc = function() {
-       return this.myNumber * 2;
-   }
+    this.sto = function () {
+        if (!this.running) {
+            alert('its NOT running, start first');
+        } else {
+            this.running = false;
+            this.endTime = new Date();
+        }
+    };
+
+    this.res = function () {
+        this.duration = 0;
+        this.running = false;
+        this.startTime = 0;
+        this.endTime = 0;
+    };
+
+    Object.defineProperty(this, 'dur', {
+        get: function(){
+            if(this.running){
+                return new Date() - this.startTime;
+            } else {
+                return this.endTime - this.startTime; 
+            }
+        }
+    })
 }
 
-
-const circle = new Circle(10);
-
-circle.myNumber = '1';
-
-let test = circle.calc();
-console.log('circle', circle);
-console.log("test: ", test);
+const sw = new MainSw();
