@@ -1,65 +1,18 @@
-// object
-const circle = {
-    radius: 1,
-    draw: function () {
-        // console.log('draw');
-    }
-};
+function Circle(radius) {
+   this.radius = radius;
 
-// factory function
-function drawFn() {
-    // console.log('it drew');
-    return 'omg it worked';
+
+   this.myNumber = 1;
+   this.calc = function() {
+       return this.myNumber * 2;
+   }
 }
 
-function CircleFactory(radius) {
-    return {
-        radius,
-        draw: drawFn
-    };
-}
 
-let testA = new CircleFactory(2)
-// console.log("testA: ", testA);
+const circle = new Circle(10);
 
-// let final = CircleFactory(2).draw();
-// console.log("final: ", final);
+circle.myNumber = '1';
 
-// constructor function
-
-function MyConstructor(myArg) {
-    // console.log('this', this);
-
-    this.myArgInObj = myArg; 
-
-    this.myMethod = function(){
-        // console.log('run something');
-    }
-}
-
-let foo = new MyConstructor('test');
-// console.log("foo: ", foo);
-
-
-// new constructor fn
-
-function CreateCircle(radiusArg){
-    this.radius = radiusArg;
-    this.draw = function(){
-        // console.log('draw');
-    }
-}
-
-let testB = new CreateCircle(2);
-// console.log("testB: ", testB);
-
-
-// CONSTRUCTOR FUNCTION 2
-
-function MyConstructor2(){
-    console.log('this', this);
-}
-
-let testC = new MyConstructor2();
-
-console.log('this', this);
+let test = circle.calc();
+console.log('circle', circle);
+console.log("test: ", test);
